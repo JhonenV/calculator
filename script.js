@@ -5,12 +5,17 @@ calculatorElement.addEventListener("click", event => handleInput(event.target));
 
 const calculatorDisplay = {
     element: calculatorDisplayElement,
+    historyElement: calculatorHistoryElement,
+    fullExpression: [],
     currentNum: 0,
     empty: true,
     update: function() {
         this.element.textContent = this.currentNum;
+        this.historyElement.textContent = this.fullExpression.join(" ");
     },
     clear: function() {
+        if (this.empty)
+            this.fullExpression = [];
         this.currentNum = 0;
         this.empty = true;
         this.update();
@@ -25,6 +30,11 @@ const calculatorDisplay = {
 
         this.update();
     },
+    pushOperator: function(operator) {
+        this.fullExpression.push(this.currentNum);
+        this.fullExpression.push(operator);
+        this.clear();
+    },
     popNum: function() {
         if (this.empty)
             return;
@@ -33,8 +43,7 @@ const calculatorDisplay = {
         result.pop();
 
         if (result.length === 0) {
-            this.empty = true;
-            this.currentNum = 0;
+            this.clear();
         } else {
             result = Number(result.join(""));
             this.currentNum = result;
@@ -52,11 +61,21 @@ function handleInput(element) {
         calculatorDisplay.pushNum(Number(element.innerText));
     }
 
-    switch(element.innerText.toLowerCase()) {
+    const option = element.innerText.toLowerCase();
+    switch(option) {
         case "ac":
             calculatorDisplay.clear();
+            break;
         case "back":
             calculatorDisplay.popNum();
+            break;
+        case "+":
+        case "-":
+        case "/":
+        case "x":
+            calculatorDisplay.pushOperator(option);
+            break;
+
     }
 }
 
