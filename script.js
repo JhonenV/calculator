@@ -1,5 +1,5 @@
 const calculatorElement = document.getElementById("calculator");
-const [calculatorHistory, calculatorDisplayElement] = document.querySelector(".calculator-display").children;
+const [calculatorHistoryElement, calculatorDisplayElement] = document.querySelector(".calculator-display").children;
 
 calculatorElement.addEventListener("click", event => handleInput(event.target));
 
@@ -24,6 +24,23 @@ const calculatorDisplay = {
         }
 
         this.update();
+    },
+    popNum: function() {
+        if (this.empty)
+            return;
+
+        let result = this.currentNum.toString().split("");
+        result.pop();
+
+        if (result.length === 0) {
+            this.empty = true;
+            this.currentNum = 0;
+        } else {
+            result = Number(result.join(""));
+            this.currentNum = result;
+        }
+
+        this.update();
     }
 }
 
@@ -38,6 +55,8 @@ function handleInput(element) {
     switch(element.innerText.toLowerCase()) {
         case "ac":
             calculatorDisplay.clear();
+        case "back":
+            calculatorDisplay.popNum();
     }
 }
 
