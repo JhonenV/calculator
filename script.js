@@ -35,9 +35,16 @@ const calculatorDisplay = {
         this.fullExpression.push(operator);
         this.clear();
     },
-    popNum: function() {
-        if (this.empty)
+    pop: function() {
+        if (this.empty) {
+            if (this.fullExpression.length !== 0) {
+                this.fullExpression.pop();
+                this.currentNum = this.fullExpression.pop();
+                this.update();
+                this.empty = false;
+            }
             return;
+        }
 
         let result = this.currentNum.toString().split("");
         result.pop();
@@ -67,7 +74,7 @@ function handleInput(element) {
             calculatorDisplay.clear();
             break;
         case "back":
-            calculatorDisplay.popNum();
+            calculatorDisplay.pop();
             break;
         case "+":
         case "-":
