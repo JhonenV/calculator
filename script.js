@@ -11,6 +11,9 @@ const calculatorDisplay = {
     empty: true,
     clearFullExpression: false,
     update: function() {
+        if (!Number.isInteger(this.currentNum)) {
+            this.currentNum = this.currentNum.toFixed(5);
+        }
         this.element.textContent = this.currentNum;
         this.historyElement.textContent = this.fullExpression.join(" ");
     },

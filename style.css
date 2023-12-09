@@ -33,7 +33,7 @@ body {
 }
 
 .calculator-history, .calculator-input {
-    padding-right: 8px;
+    padding: 0 8px;
 }
 
 .calculator-display .calculator-input {
@@ -59,4 +59,10 @@ body {
     width: 80px;
     border-radius: 10px;
     font-size: 18px;
+}
+
+.calculator-button:nth-child(4) {
+    background-color: #777;
+    color: #fff;
+    border-color: #777;
 }
