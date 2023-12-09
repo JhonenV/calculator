@@ -9,13 +9,16 @@ const calculatorDisplay = {
     fullExpression: [],
     currentNum: 0,
     empty: true,
+    clearFullExpression: false,
     update: function() {
         this.element.textContent = this.currentNum;
         this.historyElement.textContent = this.fullExpression.join(" ");
     },
     clear: function() {
-        if (this.empty)
+        if (this.empty || this.clearFullExpression) {
             this.fullExpression = [];
+            this.clearFullExpression = false;
+        }
         this.currentNum = 0;
         this.empty = true;
         this.update();
@@ -32,6 +35,12 @@ const calculatorDisplay = {
     },
     pushOperator: function(operator) {
         this.fullExpression.push(this.currentNum);
+
+        if (operator === "=") {
+            this.clearFullExpression = true;
+            return;
+        }
+
         this.fullExpression.push(operator);
         this.clear();
     },
@@ -56,6 +65,10 @@ const calculatorDisplay = {
             this.currentNum = result;
         }
 
+        this.update();
+    },
+    displayAnswer: function(answer) {
+        this.currentNum = answer;
         this.update();
     }
 }
@@ -82,8 +95,35 @@ function handleInput(element) {
         case "x":
             calculatorDisplay.pushOperator(option);
             break;
-
+        case "=":
+            if (calculatorDisplay.fullExpression.length % 2 !== 0)
+                return;
+            calculatorDisplay.pushOperator(option);
+            const result = calculateExpression(calculatorDisplay.fullExpression.slice());
+            calculatorDisplay.displayAnswer(result);
+            break;
     }
+}
+
+function calculateExpression(expression) {
+    const firstPriority = x => x === "x" || x === "/";
+    const secondPriority = x => x === "+" || x === "-";
+    const order = [firstPriority, secondPriority];
+    console.log(expression);
+
+    let currentIndex;
+    order.forEach(func => {
+        currentIndex = expression.findIndex(func);
+        while (currentIndex !== -1) {
+            let [first, operator, second] = expression.splice(currentIndex - 1, 3);
+            const solution = operate(first, second, operator);
+            expression.splice(currentIndex - 1, 0, solution);
+            currentIndex = expression.findIndex(func);
+        }
+    });
+    console.log(expression);
+
+    return expression[0];
 }
 
 function add(first, second) {
@@ -108,7 +148,7 @@ function operate(first, second, operator) {
             return add(first, second);
         case "-":
             return subtract(first, second);
-        case "*":
+        case "x":
             return multiply(first, second);
         case "/":
             return divide(first, second);
