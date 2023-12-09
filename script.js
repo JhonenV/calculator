@@ -34,6 +34,14 @@ const calculatorDisplay = {
         this.update();
     },
     pushOperator: function(operator) {
+        if (this.clearFullExpression) {
+            this.clearFullExpression = false;
+            this.fullExpression = [this.currentNum, operator];
+            this.currentNum = 0;
+            this.update();
+            return;
+        }
+
         this.fullExpression.push(this.currentNum);
 
         if (operator === "=") {
@@ -77,8 +85,9 @@ function handleInput(element) {
     if (element.nodeName !== "BUTTON")
         return;
 
-    if (Number(element.innerText)) {
+    if (!isNaN(element.innerText)) {
         calculatorDisplay.pushNum(Number(element.innerText));
+        return;
     }
 
     const option = element.innerText.toLowerCase();
@@ -109,7 +118,6 @@ function calculateExpression(expression) {
     const firstPriority = x => x === "x" || x === "/";
     const secondPriority = x => x === "+" || x === "-";
     const order = [firstPriority, secondPriority];
-    console.log(expression);
 
     let currentIndex;
     order.forEach(func => {
@@ -121,7 +129,6 @@ function calculateExpression(expression) {
             currentIndex = expression.findIndex(func);
         }
     });
-    console.log(expression);
 
     return expression[0];
 }
