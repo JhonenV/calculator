@@ -1,5 +1,6 @@
 const calculatorElement = document.getElementById("calculator");
 const [calculatorHistoryElement, calculatorDisplayElement] = document.querySelector(".calculator-display").children;
+const decimalButton = document.querySelectorAll(".calculator-button")[14];
 
 calculatorElement.addEventListener("click", event => handleInput(event.target));
 
@@ -11,9 +12,6 @@ const calculatorDisplay = {
     empty: true,
     clearFullExpression: false,
     update: function() {
-        if (!Number.isInteger(this.currentNum)) {
-            this.currentNum = this.currentNum.toFixed(5);
-        }
         this.element.textContent = this.currentNum;
         this.historyElement.textContent = this.fullExpression.join(" ");
     },
@@ -26,12 +24,18 @@ const calculatorDisplay = {
         this.empty = true;
         this.update();
     },
-    pushNum: function(num) {
+    pushNum: function(value) {
         if (this.empty) {
-            this.currentNum = num;
+            if (value === ".") {
+                this.currentNum = "0.";
+            } else {
+                this.currentNum = value;
+            }
             this.empty = false;
         } else {
-            this.currentNum = this.currentNum * 10 + num;
+            const result = this.currentNum.toString().split("");
+            result.push(value);
+            this.currentNum = result.join("");
         }
 
         this.update();
@@ -39,13 +43,14 @@ const calculatorDisplay = {
     pushOperator: function(operator) {
         if (this.clearFullExpression) {
             this.clearFullExpression = false;
+            this.empty = true;
             this.fullExpression = [this.currentNum, operator];
             this.currentNum = 0;
             this.update();
             return;
         }
 
-        this.fullExpression.push(this.currentNum);
+        this.fullExpression.push(Number(this.currentNum));
 
         if (operator === "=") {
             this.clearFullExpression = true;
@@ -67,7 +72,7 @@ const calculatorDisplay = {
         }
 
         let result = this.currentNum.toString().split("");
-        result.pop();
+        const popped = result.pop();
 
         if (result.length === 0) {
             this.clear();
@@ -77,16 +82,21 @@ const calculatorDisplay = {
         }
 
         this.update();
+        return popped;
     },
     displayAnswer: function(answer) {
-        this.currentNum = answer;
+        answer = answer.toString().split("");
+        this.currentNum = Number(answer.slice(0, Math.min(answer.length, 16)).join(""));
         this.update();
     }
 }
 
+let decimalEnabled = true;
+
 function handleInput(element) {
     if (element.nodeName !== "BUTTON")
         return;
+
 
     if (!isNaN(element.innerText)) {
         calculatorDisplay.pushNum(Number(element.innerText));
@@ -95,17 +105,26 @@ function handleInput(element) {
 
     const option = element.innerText.toLowerCase();
     switch(option) {
+        case ".":
+            calculatorDisplay.pushNum(".");
+            decimalEnabled = false;
+            break;
         case "ac":
             calculatorDisplay.clear();
+            decimalEnabled = true;
             break;
         case "back":
-            calculatorDisplay.pop();
+            let popped = calculatorDisplay.pop();
+            if (popped === ".") {
+                decimalEnabled = true;
+            }
             break;
         case "+":
         case "-":
         case "/":
         case "x":
             calculatorDisplay.pushOperator(option);
+            decimalEnabled = true;
             break;
         case "=":
             if (calculatorDisplay.fullExpression.length % 2 !== 0)
@@ -113,7 +132,14 @@ function handleInput(element) {
             calculatorDisplay.pushOperator(option);
             const result = calculateExpression(calculatorDisplay.fullExpression.slice());
             calculatorDisplay.displayAnswer(result);
+            decimalEnabled = !(result.toString().includes("."));
             break;
+    }
+
+    if (!decimalEnabled) {
+        decimalButton.setAttribute("disabled", "disabled");
+    } else {
+        decimalButton.removeAttribute("disabled");
     }
 }
 
